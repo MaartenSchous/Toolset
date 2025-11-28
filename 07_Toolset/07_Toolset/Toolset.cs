@@ -14,6 +14,11 @@ namespace _07_Toolset
 {
     public class Toolset
     {
+        //V1.1
+        //Removed test account
+        //fixed ambiguous System.Drawing.Image
+        //added GetAllFromTier to SQLInterface
+        //added DeleteEntry to SQLInterface
 
         // All the variables
         //
@@ -24,12 +29,6 @@ namespace _07_Toolset
         //Connection string to the local MySQL database
         //TODO test a few versions
         public string MySQLConnectionString = "";
-        /*
-    "server=localhost;" +
-    "database=generationinfo;" +
-    "uid=FormUser;" +
-    "pwd=qN6&k$fG7@pZ!xR2;";
-        */
 
         //Connection info for webhost
         public string DatabaseHost = "";
@@ -112,7 +111,7 @@ namespace _07_Toolset
         }
 
         //Takes an image and returns a redrawn (resized) image
-        public static Image ResizeImage(Image image, int newWidth, int newHeight)
+        public static System.Drawing.Image ResizeImage(System.Drawing.Image image, int newWidth, int newHeight)
         {
             // Create a new bitmap with the specified dimensions
             var newImage = new Bitmap(newWidth, newHeight);
@@ -245,6 +244,85 @@ namespace _07_Toolset
                 return entries;
             }
 
+            //returns a list of tickets from a specific tier
+            public List<TicketParameters> GetAllFromTier(string tier)
+            {
+
+                //prepare return type
+                List<TicketParameters> entries = new List<TicketParameters>();
+
+                string sqlQuery = "SELECT * FROM `imageentries` WHERE tier LIKE '%" + tier + "%' AND Status NOT LIKE '%queued%' ORDER BY ImageID ASC;";
+
+                // Use the MySqlConnection for MySQL
+                using (MySqlConnection connection = new MySqlConnection(ConnectionString))
+                {
+                    using (MySqlCommand command = new MySqlCommand(sqlQuery, connection))
+                    {
+                        try
+                        {
+                            connection.Open();
+                            // ExecuteReader is used for SELECT statements
+                            using (MySqlDataReader reader = command.ExecuteReader())
+                            {
+                                // 3. Change the loop to process ALL rows returned by the reader.
+                                while (reader.Read())
+                                {
+                                    // Create a new TicketParameters object for EACH row
+                                    TicketParameters parameters = new TicketParameters
+                                    {
+                                        // --- String Fields ---
+                                        Prompt = reader.GetString("Prompt"),
+                                        NegativePrompt = reader.GetString("NegativePrompt"),
+                                        SamplerName = reader.GetString("SamplerName"),
+                                        HiresUpscaler = reader.GetString("Hiresupscaler"),
+                                        Tier = reader.GetString("Tier"),
+
+                                        // --- Integer Fields ---
+                                        Steps = reader.GetInt32("Steps"),
+                                        Width = reader.GetInt32("Width"),
+                                        Height = reader.GetInt32("Height"),
+                                        BatchSize = reader.GetInt32("BatchSize"),
+                                        HiresSteps = reader.GetInt32("HiresSteps"),
+                                        ImageID = reader.GetInt32("ImageID"),
+
+                                        // --- Float Fields ---
+                                        CfgScale = reader.GetFloat("CfgScale"),
+                                        HiresDenoisingStrength = reader.GetFloat("HiresDenoisingStrength"),
+                                        HiresUpscaleBy = reader.GetFloat("HiresUpscaleBy"),
+
+                                        // --- Boolean Fields ---
+                                        HiresFix = reader.GetBoolean("HiresFix"),
+
+                                        // --- Nullable/Optional Fields ---
+                                        // Check for DBNull before reading the value for nullable types
+                                        Seed = reader.IsDBNull(reader.GetOrdinal("Seed")) ? (long?)null : reader.GetInt64("Seed"),
+                                        Status = reader.IsDBNull(reader.GetOrdinal("Status")) ? null : reader.GetString("Status"),
+                                        Location = reader.IsDBNull(reader.GetOrdinal("Location")) ? null : reader.GetString("Location"),
+                                        Origin = reader.IsDBNull(reader.GetOrdinal("Origin")) ? null : reader.GetString("Origin"),
+                                        //Safe = reader.IsDBNull(reader.GetOrdinal("Safe")) ? (bool?)null : reader.GetBoolean("Safe"),
+                                    };
+
+                                    // Add the newly mapped object to the list
+                                    entries.Add(parameters);
+                                }
+                            }
+                        }
+                        catch (MySqlException ex)
+                        {
+                            // Handle MySQL-specific errors
+                            MessageBox.Show($"MySQL Error during data retrieval: {ex.Message}", "Database Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                        catch (Exception ex)
+                        {
+                            // Handle other unexpected errors
+                            MessageBox.Show($"An unexpected error occurred during retrieval: {ex.Message}", "Application Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                    }
+                }
+
+                return entries;
+            }
+
             //provides entry insertion capabilities
             public class MySQLDataInserter
             {
@@ -342,7 +420,7 @@ namespace _07_Toolset
                     ConnectionString = mySQLConnectionString;
                 }
 
-                public bool UpdateStatusAndTier(TicketParameters row)
+                public bool UpdateStatusAndTier(TicketParameters row, string ConnectionString)
                 {
                     //Set the new values WHERE imageID (unique key) matches.
                     string updateQuery = @"
@@ -398,6 +476,42 @@ namespace _07_Toolset
                 }
             }
 
+            public bool DeleteEntry(string imageID)
+            {
+                string DeleteQuery = @"
+        DELETE FROM imageentries
+        WHERE imageID = @imageID;";
+
+                using (MySqlConnection connection = new MySqlConnection(ConnectionString))
+                {
+                    using (MySqlCommand command = new MySqlCommand(DeleteQuery, connection))
+                    {
+                        // Add the imageID parameter to the command
+                        command.Parameters.AddWithValue("@imageID", imageID);
+
+                        try
+                        {
+                            connection.Open();
+                            // ExecuteNonQuery returns the number of rows affected (deleted)
+                            int rowsAffected = command.ExecuteNonQuery();
+
+                            return rowsAffected > 0;
+                        }
+                        catch (MySqlException ex)
+                        {
+                            MessageBox.Show($"MySQL Error during delete: {ex.Message}", "Database Delete Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            return false;
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show($"An unexpected error occurred during delete: {ex.Message}", "Application Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            return false;
+                        }
+                    }
+                }
+            }
+
+
             //My database uses tickets.
             //TODO not sure whether a static class can be designed that will handle universal variables to insert. Worth figuring out.
             public class TicketParameters
@@ -427,7 +541,7 @@ namespace _07_Toolset
                 public string Location { get; set; }
                 public string Origin { get; set; }
 
-                public Image Preview { get; set; }
+                public System.Drawing.Image Preview { get; set; }
             }
         }
 
