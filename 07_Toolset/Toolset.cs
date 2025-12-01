@@ -20,14 +20,20 @@ namespace _07_Toolset
         //added GetAllFromTier to SQLInterface
         //added DeleteEntry to SQLInterface
 
-        //V1.2
+        //V1.2.1
         //Learned how NOT to update to Github from Visual studio, fixed that.
+
+        //V1.2.3
+        //removed .2 version
+
+
 
         // All the variables
         //
         //Configuration files
         public string MySQLConfigLocation = "C:\\Develop\\MySQL.txt"; //Location of the configuration files
         public string MyWebhostConfigLocation = "C:\\Develop\\Webhost.txt"; //Location of the configuration files
+
 
         //Connection string to the local MySQL database
         //TODO test a few versions
