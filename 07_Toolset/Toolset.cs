@@ -20,6 +20,9 @@ namespace _07_Toolset
         //added GetAllFromTier to SQLInterface
         //added DeleteEntry to SQLInterface
 
+        //V1.2
+        //Learned how NOT to update to Github from Visual studio, fixed that.
+
         // All the variables
         //
         //Configuration files
