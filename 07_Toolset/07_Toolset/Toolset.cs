@@ -21,6 +21,7 @@ namespace _07_Toolset
         //added DeleteEntry to SQLInterface
 
         //v2.6 Discovered yet another way how not to commit changes
+        //v2.6.1 Branch merge test
 
         // All the variables
         //
