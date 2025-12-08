@@ -295,11 +295,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\maart\\source\\repos\\07_Toolset\\07_Toolset\\07_Toolset.csproj",
+      "projectUniqueName": "C:\\GitHub\\Toolset\\07_Toolset\\07_Toolset\\07_Toolset.csproj",
       "projectName": "07_Toolset",
-      "projectPath": "C:\\Users\\maart\\source\\repos\\07_Toolset\\07_Toolset\\07_Toolset.csproj",
+      "projectPath": "C:\\GitHub\\Toolset\\07_Toolset\\07_Toolset\\07_Toolset.csproj",
       "packagesPath": "C:\\Users\\maart\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\maart\\source\\repos\\07_Toolset\\07_Toolset\\obj\\",
+      "outputPath": "C:\\GitHub\\Toolset\\07_Toolset\\07_Toolset\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
