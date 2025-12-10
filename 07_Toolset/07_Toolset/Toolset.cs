@@ -14,10 +14,21 @@ namespace _07_Toolset
 {
     public class Toolset
     {
-        //v2.7.1 Replaced nested classes with methods
-        //v2.7.2 Learned to allign code and make it easyer to read
+        //Progression log:
+        //v2.7
+        /*
+        Replaced nested classes with methods
+        Learned to allign code and make it easyer to read (CTR+K+D in VS)
+        Removed duplicate GetValue method
+        Learned to Collapse/Expand all code regions in VS (CTR+M>CTR+O and CTR+M>CTR+L)
+        made string ConnectionString public
+        getTiers was using connectionstring, changed to MySQLconnectionstring as inteneded
+        Replaced all instances of connectionstring with MySQLconnectionstring in SQL methods
+        removed CreateconnectionString() Method
+        /*
 
         //v2.6 Discovered yet another way how not to commit changes
+        
         //v2.6.1 Branch merge test
 
         //V1.1
@@ -29,15 +40,14 @@ namespace _07_Toolset
         // All the variables
         //
         //Configuration files
-        public string MySQLConfigLocation = "C:\\Develop\\MySQL.txt"; //Location of the configuration files
-        public string MyWebhostConfigLocation = "C:\\Develop\\Webhost.txt"; //Location of the configuration files
+        public string MySQLConfigLocation = "C:\\Develop\\MySQL.txt"; //Location of my personal configuration files
+        public string MyWebhostConfigLocation = "C:\\Develop\\Webhost.txt"; //Location of my personal configuration files
 
         //Connection string to the local MySQL database
-        //TODO test a few versions
         public string MySQLConnectionString = "";
 
         //SLQ connection string
-        string ConnectionString = "";
+        public string ConnectionString = "";
 
         //Connection info for webhost
         public string DatabaseHost = "";
@@ -80,7 +90,7 @@ namespace _07_Toolset
             }
         }
 
-        //Loads the MySQL configuration and sets the class variables
+        //Loads the MySQL configuration and sets the class variables and connectionstring
         public async void LoadMySQLConfigAsync()
         {
             if (File.Exists(MySQLConfigLocation))
@@ -171,7 +181,7 @@ namespace _07_Toolset
             int count = -1; // Default error value
 
             //use the connection
-            using (MySqlConnection connection = new MySqlConnection(ConnectionString))
+            using (MySqlConnection connection = new MySqlConnection(MySQLConnectionString))
             {
                 //to use the command
                 using (MySqlCommand command = new MySqlCommand(query, connection))
@@ -214,7 +224,7 @@ namespace _07_Toolset
             string sqlQuery = "SELECT DISTINCT tier FROM imageentries;";
 
             // Use the MySqlConnection for MySQL
-            using (MySqlConnection connection = new MySqlConnection(ConnectionString))
+            using (MySqlConnection connection = new MySqlConnection(MySQLConnectionString))
             {
                 using (MySqlCommand command = new MySqlCommand(sqlQuery, connection))
                 {
@@ -257,7 +267,7 @@ namespace _07_Toolset
             string sqlQuery = "SELECT * FROM `imageentries` WHERE tier LIKE '%" + tier + "%' AND Status NOT LIKE '%queued%' ORDER BY ImageID ASC;";
 
             // Use the MySqlConnection for MySQL
-            using (MySqlConnection connection = new MySqlConnection(ConnectionString))
+            using (MySqlConnection connection = new MySqlConnection(MySQLConnectionString))
             {
                 using (MySqlCommand command = new MySqlCommand(sqlQuery, connection))
                 {
@@ -344,7 +354,7 @@ namespace _07_Toolset
         // Inserts a new row into the imageentries table using the provided parameters. Returns success or failure
         public bool InsertEntry(TicketParameters parameters)
         {
-            using (MySqlConnection connection = new MySqlConnection(ConnectionString))
+            using (MySqlConnection connection = new MySqlConnection(MySQLConnectionString))
             {
                 using (MySqlCommand command = new MySqlCommand(InsertQuery, connection))
                 {
@@ -404,17 +414,15 @@ namespace _07_Toolset
         }
 
         //provides update capabilities
-        public bool UpdateStatusAndTier(TicketParameters row, string ConnectionString)
+        public bool UpdateStatusAndTier(TicketParameters row, string MySQLConnectionString)
         {
             //Set the new values WHERE imageID (unique key) matches.
             string updateQuery = @"
             UPDATE imageentries 
             SET status = @NewStatus, tier = @NewTier
             WHERE imageID = @ImageID;";
-        }
 
-        /*
-            using (MySqlConnection connection = new MySqlConnection(ConnectionString))
+            using (MySqlConnection connection = new MySqlConnection(MySQLConnectionString))
             {
                 using (MySqlCommand command = new MySqlCommand(updateQuery, connection))
                 {
@@ -436,30 +444,30 @@ namespace _07_Toolset
                             return true;
                         }
                         else if (rowsAffected == 0)
-{
-    MessageBox.Show($"Update complete, but no row was found with imageID: {row.ImageID}.", "Update Status", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-    return false;
-}
-else
-{
-    // This indicates a severe problem since imageID should be unique.
-    MessageBox.Show($"Critical Error: Multiple rows ({rowsAffected}) were updated for imageID: {row.ImageID}.", "Update Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-    return false;
-}
+                        {
+                            MessageBox.Show($"Update complete, but no row was found with imageID: {row.ImageID}.", "Update Status", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            return false;
+                        }
+                        else
+                        {
+                            // This indicates a severe problem since imageID should be unique.
+                            MessageBox.Show($"Critical Error: Multiple rows ({rowsAffected}) were updated for imageID: {row.ImageID}.", "Update Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            return false;
+                        }
                     }
                     catch (MySqlException ex)
                     {
                         MessageBox.Show($"MySQL Error during update: {ex.Message}", "Database Update Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-return false;
+                        return false;
                     }
                     catch (Exception ex)
                     {
                         MessageBox.Show($"An unexpected error occurred during update: {ex.Message}", "Application Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-return false;
+                        return false;
                     }
                 }
+            }
         }
-        */
 
 
 
@@ -471,7 +479,7 @@ return false;
         DELETE FROM imageentries
         WHERE imageID = @imageID;";
 
-            using (MySqlConnection connection = new MySqlConnection(ConnectionString))
+            using (MySqlConnection connection = new MySqlConnection(MySQLConnectionString))
             {
                 using (MySqlCommand command = new MySqlCommand(DeleteQuery, connection))
                 {
@@ -539,20 +547,6 @@ return false;
         //Interaction with a webhost via FTP or SFTP
         //
 
-        //Gets values from a textfile.
-        public string GetValue(string content, string key)
-        {
-            // The regex now captures the value until the end of the line
-            var match = Regex.Match(content, $@"{key}\s*=\s*(.*)");
-            if (match.Success)
-            {
-                // Trim leading/trailing whitespace
-                string value = match.Groups[1].Value.Trim();
-                return value;
-            }
-            return string.Empty;
-        }
-
         //Loads the settings from a textfile. For my test environment that is fine but I expect a more secure source.
         public async void LoadWebhostConfigAsync(string WebhostConfigLocation)
         {
@@ -586,14 +580,8 @@ return false;
         //Shows a messagebox with the connection status. Good for testing.
         public void CheckConnection()
         {
-            string connectionString =
-                $"Server={DatabaseHost};" +
-                $"Database={DatabaseName};" +
-                $"Uid={DatabaseUsername};" +
-                $"Pwd={DatabasePassword};";
-
             //Attempt the connection
-            using (MySqlConnection connection = new MySqlConnection(connectionString))
+            using (MySqlConnection connection = new MySqlConnection(MySQLConnectionString))
             {
                 try
                 {
@@ -646,18 +634,11 @@ return false;
                 return;
             }
 
-            //Ensure the connection details are available
-            string connectionString =
-                $"Server={DatabaseHost};" +
-                $"Database={DatabaseName};" +
-                $"Uid={DatabaseUsername};" +
-                $"Pwd={DatabasePassword};";
-
             // Define the INSERT Query for the webhost database
             //Using parameterized queries (@Title, @Description) to prevent SQL Injection attacks.
             string insertQuery = "INSERT INTO Images (ID, Prompt, Filelocation) VALUES (@ID, @Prompt, @Filelocation);";
 
-            using (MySqlConnection connection = new MySqlConnection(connectionString))
+            using (MySqlConnection connection = new MySqlConnection(MySQLConnectionString))
             {
                 using (MySqlCommand command = new MySqlCommand(insertQuery, connection))
                 {
