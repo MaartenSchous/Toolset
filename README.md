@@ -1,2 +1,2 @@
 # Toolset
-A combination of classes I made to prevent repetition
+A combination of classes I made to prevent repetition in my early projects
