@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("07_Toolset")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b4b6a10eb83e94744b27f75089180df80ad10e38")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e43e867b64a9b4551c6fb3b10571d4e2866c06ab")]
 [assembly: System.Reflection.AssemblyProductAttribute("07_Toolset")]
 [assembly: System.Reflection.AssemblyTitleAttribute("07_Toolset")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -25,7 +25,7 @@ namespace _07_Toolset
         getTiers was using connectionstring, changed to MySQLconnectionstring as inteneded
         Replaced all instances of connectionstring with MySQLconnectionstring in SQL methods
         removed CreateconnectionString() Method
-        /*
+        */
 
         //v2.6 Discovered yet another way how not to commit changes
         
